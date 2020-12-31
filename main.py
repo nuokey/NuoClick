@@ -3,7 +3,7 @@ from telebot import types
 import sqlite3
 import config
 
-bot = telebot.TeleBot(config.test_token)
+bot = telebot.TeleBot(config.token)
 
 print('Bot started')
 
