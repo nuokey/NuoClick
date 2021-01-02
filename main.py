@@ -13,8 +13,8 @@ shop_keyboard = types.InlineKeyboardMarkup()
 key_click_plus1 = types.InlineKeyboardButton(text="Click upgrade +1 (500)", callback_data="shop_click_plus 1-500")
 key_click_plus2 = types.InlineKeyboardButton(text="Click upgrade +2 (750)", callback_data="shop_click_plus 2-750")
 key_click_plus5 = types.InlineKeyboardButton(text="Click upgrade +5 (2000)", callback_data="shop_click_plus 5-2000")
-key_click_plus10 = types.InlineKeyboardButton(text="Click upgrade +10 (4000)", callback_data="shop_click_plus 10-4000")
-key_click_plus100 = types.InlineKeyboardButton(text="Click upgrade +100 (35000)", callback_data="shop_click_plus 100-35000")
+key_click_plus10 = types.InlineKeyboardButton(text="Click upgrade +10 (3000)", callback_data="shop_click_plus 10-3000")
+key_click_plus100 = types.InlineKeyboardButton(text="Click upgrade +100 (25000)", callback_data="shop_click_plus 100-25000")
 
 shop_keyboard.add(key_click_plus1)
 shop_keyboard.add(key_click_plus2)
@@ -33,13 +33,13 @@ def start_message(message):
 	keyboard = types.ReplyKeyboardMarkup()
 	keyboard.row('Click', 'Shop')
 
-	bot.send_message(message.from_user.id, 'ClickBot\nVersion: 0.1', reply_markup=keyboard)
+	bot.send_message(message.from_user.id, 'ClickBot\nVersion: 0.2', reply_markup=keyboard)
 
 	for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
 		user_balance = i[0]
 
 	if user_balance == None:
-		cursor.execute(f"INSERT INTO users VALUES ({message.from_user.id}, 0)")
+		cursor.execute(f"INSERT INTO users VALUES ({message.from_user.id}, 0, 1)")
 		db.commit()
 		bot.send_message(message.from_user.id, 'You have registered')
 
@@ -89,35 +89,10 @@ def callback_answer(call):
 		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {call.from_user.id}"):
 			balance = i[0]
 
-		# if int(call.data[15]) == 1 and balance >= 500:
-		# 	cursor.execute(f'UPDATE users SET click = {click + int(call.data[15])} WHERE user_id = {call.from_user.id}')
-		# 	cursor.execute(f'UPDATE users SET balance = {balance - 500} WHERE user_id = {call.from_user.id}')
-		# 	bot.edit_message_text(f'Shop\nCoins: {balance - 500}\nCoins per click: {click + 1}', chat_id=call.from_user.id, message_id=call.message.id)
-		
-		# if int(call.data[15]) == 2 and balance >= 750:
-		# 	cursor.execute(f'UPDATE users SET click = {click + int(call.data[15])} WHERE user_id = {call.from_user.id}')
-		# 	cursor.execute(f'UPDATE users SET balance = {balance - 750} WHERE user_id = {call.from_user.id}')
-		# 	bot.edit_message_text(f'Shop\nCoins: {balance - 750}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id)
-		
-		# if int(call.data[15]) == 5 and balance >= 2000:
-		# 	cursor.execute(f'UPDATE users SET click = {click + int(call.data[15])} WHERE user_id = {call.from_user.id}')
-		# 	cursor.execute(f'UPDATE users SET balance = {balance - 2000} WHERE user_id = {call.from_user.id}')
-		# 	bot.edit_message_text(f'Shop\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id)
-		
-		# if call.data[16:17] == '10' and balance >= 4000:
-		# 	cursor.execute(f'UPDATE users SET click = {click + int(call.data[16:17])} WHERE user_id = {call.from_user.id}')
-		# 	cursor.execute(f'UPDATE users SET balance = {balance - 4000} WHERE user_id = {call.from_user.id}')
-		# 	bot.edit_message_text(f'Shop\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id)
-		
-		# if call.data[16:18] == '100' and balance >= 35000:
-		# 	cursor.execute(f'UPDATE users SET click = {click + int(call.data[16:18])} WHERE user_id = {call.from_user.id}')
-		# 	cursor.execute(f'UPDATE users SET balance = {balance - 35000} WHERE user_id = {call.from_user.id}')
-		# 	bot.edit_message_text(f'Shop\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id)
-
-
-		cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE user_id = {call.from_user.id}')
-		cursor.execute(f'UPDATE users SET balance = {balance - int(call_data[1])} WHERE user_id = {call.from_user.id}')
-		bot.edit_message_text(f'Shop\nCoins: {balance - int(call_data[1])}\nCoins per click: {click + int(call_data[0])}', chat_id=call.from_user.id, message_id=call.message.id)
+		if balance >= int(call_data[1]):
+			cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE user_id = {call.from_user.id}')
+			cursor.execute(f'UPDATE users SET balance = {balance - int(call_data[1])} WHERE user_id = {call.from_user.id}')
+			bot.edit_message_text(f'Shop\nCoins: {balance - int(call_data[1])}\nCoins per click: {click + int(call_data[0])}', chat_id=call.from_user.id, message_id=call.message.id)
 
 		db.commit()
 
