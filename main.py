@@ -5,7 +5,7 @@ import time
 
 import config
 
-bot = telebot.TeleBot(config.test_token)
+bot = telebot.TeleBot(config.token)
 admins = [889696918]
 
 shop_keyboard = types.InlineKeyboardMarkup()
