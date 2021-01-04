@@ -28,6 +28,7 @@ key_click_plus5 = types.InlineKeyboardButton(text="Click upgrade +5", callback_d
 key_click_plus10 = types.InlineKeyboardButton(text="Click upgrade +10", callback_data=f"shop_click_plus 10-{config.click_upgrade10}")
 key_click_plus100 = types.InlineKeyboardButton(text="Click upgrade +100", callback_data=f"shop_click_plus 100-{config.click_upgrade100}")
 key_click_plus1000 = types.InlineKeyboardButton(text="Click upgrade +1000", callback_data=f"shop_click_plus 1000-{config.click_upgrade1000}")
+key_shop_update = types.InlineKeyboardButton(text="Update", callback_data="to_shop")
 key_shop_close = types.InlineKeyboardButton(text="Close", callback_data="to_profile")
 
 shop_keyboard.add(key_click_plus1)
@@ -35,6 +36,7 @@ shop_keyboard.add(key_click_plus5)
 shop_keyboard.add(key_click_plus10)
 shop_keyboard.add(key_click_plus100)
 shop_keyboard.add(key_click_plus1000)
+shop_keyboard.add(key_shop_update)
 shop_keyboard.add(key_shop_close)
 
 print('ClickBot started')
@@ -132,7 +134,10 @@ def callback_answer(call):
 			pass
 
 	elif call.data == 'to_shop':
-		bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
+		try:
+			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
+		except:
+			pass
 	
 	elif call.data == 'profile_close':
 		bot.delete_message(call.from_user.id, call.message.id)
