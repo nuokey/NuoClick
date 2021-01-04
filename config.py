@@ -1,4 +1,4 @@
-token = '1410677767:AAFPU6gBXDfRUu6Bs-ecgOk4yFs1wCId0-c'
+token = '1413603655:AAHGSnGRJSpcc-trU9q-zZiLqfXmaLrwFpg'
 
 click_upgrade1 = 1000
 click_upgrade5 = 4000
