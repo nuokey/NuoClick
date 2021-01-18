@@ -43,106 +43,115 @@ print('ClickBot started')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-	db = sqlite3.connect('data.db')
-	cursor = db.cursor()
-	user_balance = None
+	try:
+		db = sqlite3.connect('data.db')
+		cursor = db.cursor()
+		user_balance = None
 
-	main_keyboard = types.ReplyKeyboardMarkup()
-	main_keyboard.row('Click', 'Profile')
+		main_keyboard = types.ReplyKeyboardMarkup()
+		main_keyboard.row('Click', 'Profile')
 
-	bot.send_message(message.from_user.id, "ClickBot\nVersion: 0.3", reply_markup=main_keyboard)
+		bot.send_message(message.from_user.id, "ClickBot\nVersion: 0.3", reply_markup=main_keyboard)
 
-	for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
-		user_balance = i[0]
+		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
+			user_balance = i[0]
 
-	if user_balance == None:
-		cursor.execute(f"INSERT INTO users VALUES ({message.from_user.id}, 0, 1, 0)")
-		db.commit()
-		bot.send_message(message.from_user.id, 'You have registered')
+		if user_balance == None:
+			cursor.execute(f"INSERT INTO users VALUES ({message.from_user.id}, 0, 1, 0)")
+			db.commit()
+			bot.send_message(message.from_user.id, 'You have registered')
+	except:
+		pass
 
 @bot.message_handler(content_types=['text'])
 def text_message(message):
-	print(message.from_user.username)
 	global shop_keyboard
-	db = sqlite3.connect('data.db')
-	cursor = db.cursor()
-	user_balance = None
+	try:
+		print(message.from_user.username)
+		db = sqlite3.connect('data.db')
+		cursor = db.cursor()
+		user_balance = None
 
-	for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
-		user_balance = i[0]
+		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
+			user_balance = i[0]
 
-	for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
-		click = i[0]
+		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
+			click = i[0]
 
-	if user_balance != None:
-		if message.text == 'Click':
-			cursor.execute(f"UPDATE users SET balance = {user_balance + click} WHERE user_id = {message.from_user.id}")
-			db.commit()
+		if user_balance != None:
+			if message.text == 'Click':
+				cursor.execute(f"UPDATE users SET balance = {user_balance + click} WHERE user_id = {message.from_user.id}")
+				db.commit()
 
-		elif message.text == 'Profile':
-			bot.send_message(message.from_user.id, f'Your profile\nCoins: {user_balance}\nCoins per click: {click}', reply_markup=profile_keyboard)
+			elif message.text == 'Profile':
+				bot.send_message(message.from_user.id, f'Your profile\nCoins: {user_balance}\nCoins per click: {click}', reply_markup=profile_keyboard)
 
-	else:
-		bot.send_message(message.from_user.id, "You aren't registered, write /start")
+		else:
+			bot.send_message(message.from_user.id, "You aren't registered, write /start")
 
-	bot.delete_message(message.from_user.id, message.message_id)
-	user_balance = None
+		bot.delete_message(message.from_user.id, message.message_id)
+		user_balance = None
+	except:
+		pass
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_answer(call):
 	global shop_keyboard
-	db = sqlite3.connect('data.db')
-	cursor = db.cursor()
+	try:
+		db = sqlite3.connect('data.db')
+		cursor = db.cursor()
 
-	for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {call.from_user.id}"):
-		click = i[0]
+		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {call.from_user.id}"):
+			click = i[0]
 
-	for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {call.from_user.id}"):
-		balance = i[0]
+		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {call.from_user.id}"):
+			balance = i[0]
 
-	for i in cursor.execute(f"SELECT upgrade_number FROM users WHERE user_id = {call.from_user.id}"):
-		upgrade_number = i[0]
+		for i in cursor.execute(f"SELECT upgrade_number FROM users WHERE user_id = {call.from_user.id}"):
+			upgrade_number = i[0]
 
-	upgrade_number_cost = 1 + 0.1 * upgrade_number
+		upgrade_number_cost = 1 + 0.1 * upgrade_number
 
-	text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
+		text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
 
-	if call.data[0:15] == "shop_click_plus":
-		call_data = (call.data).split(' ')
-		call_data = call_data[1].split('-')
+		if call.data[0:15] == "shop_click_plus":
+			call_data = (call.data).split(' ')
+			call_data = call_data[1].split('-')
 
-		upgrade_cost = int(int(call_data[1]) * upgrade_number_cost)
+			upgrade_cost = int(int(call_data[1]) * upgrade_number_cost)
 
-		if balance >= upgrade_cost:
-			cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE user_id = {call.from_user.id}')
-			cursor.execute(f'UPDATE users SET balance = {balance - upgrade_cost} WHERE user_id = {call.from_user.id}')
-			cursor.execute(f'UPDATE users SET upgrade_number = {upgrade_number + 1} WHERE user_id = {call.from_user.id}')
+			if balance >= upgrade_cost:
+				cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE user_id = {call.from_user.id}')
+				cursor.execute(f'UPDATE users SET balance = {balance - upgrade_cost} WHERE user_id = {call.from_user.id}')
+				cursor.execute(f'UPDATE users SET upgrade_number = {upgrade_number + 1} WHERE user_id = {call.from_user.id}')
 
-			upgrade_number_cost = 1 + 0.1 * upgrade_number + 0.1
-			balance -= upgrade_cost
-			click += int(call_data[0])
+				upgrade_number_cost = 1 + 0.1 * upgrade_number + 0.1
+				balance -= upgrade_cost
+				click += int(call_data[0])
 
-			text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
-			
-			bot.edit_message_text(text+' ', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=None)
-			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
+				text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
+				
+				bot.edit_message_text(text+' ', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=None)
+				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
 
-	elif call.data == 'to_profile':
-		try:
-			bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=profile_keyboard)
-		except:
-			pass
+		elif call.data == 'to_profile':
+			try:
+				bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=profile_keyboard)
+			except:
+				pass
 
-	elif call.data == 'to_shop':
-		try:
-			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
-		except:
-			pass
-	
-	elif call.data == 'profile_close':
-		bot.delete_message(call.from_user.id, call.message.id)
+		elif call.data == 'to_shop':
+			try:
+				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
+			except:
+				pass
+		
+		elif call.data == 'profile_close':
+			bot.delete_message(call.from_user.id, call.message.id)
 
-	db.commit()
+		db.commit()
+	except:
+		pass
 
 try:
 	bot.polling()
