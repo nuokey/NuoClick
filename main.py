@@ -5,8 +5,15 @@ import time
 
 import config
 
+def post(message):
+	db = sqlite3.connect('data.db')
+	cursor = db.cursor()
+
+	for i in cursor.execute(f'SELECT user_id FROM users'):
+		bot.send_message(i[0], message)
+
 bot = telebot.TeleBot(config.token)
-admins = [889696918]
+admins = [889696918, 737286150, 773282852]
 
 # Keyboards
 # Profile
@@ -40,6 +47,7 @@ shop_keyboard.add(key_shop_update)
 shop_keyboard.add(key_shop_close)
 
 print('ClickBot started')
+# post('Бот запущен')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -63,11 +71,22 @@ def start_message(message):
 	except:
 		pass
 
+@bot.message_handler(commands=['post'])
+def post_message(message):
+	try:
+		db = sqlite3.connect('data.db')
+		cursor = db.cursor()
+
+		if message.from_user.id in admins:
+			post(message.text[5:len(message.text)])
+	except:
+		pass
+
 @bot.message_handler(content_types=['text'])
 def text_message(message):
-	global shop_keyboard
 	try:
 		print(message.from_user.username)
+		global shop_keyboard
 		db = sqlite3.connect('data.db')
 		cursor = db.cursor()
 		user_balance = None
@@ -96,8 +115,9 @@ def text_message(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_answer(call):
-	global shop_keyboard
 	try:
+		global shop_keyboard
+		print(0)
 		db = sqlite3.connect('data.db')
 		cursor = db.cursor()
 
@@ -135,21 +155,16 @@ def callback_answer(call):
 				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
 
 		elif call.data == 'to_profile':
-			try:
-				bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=profile_keyboard)
-			except:
-				pass
-
+			bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=profile_keyboard)
+			
 		elif call.data == 'to_shop':
-			try:
-				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
-			except:
-				pass
+			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
 		
 		elif call.data == 'profile_close':
 			bot.delete_message(call.from_user.id, call.message.id)
 
 		db.commit()
+	
 	except:
 		pass
 
