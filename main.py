@@ -3,7 +3,7 @@ from telebot import types
 import sqlite3
 import time
 
-import config
+token = open('token.txt', )
 
 def post(message):
 	db = sqlite3.connect('data.db')
@@ -12,7 +12,7 @@ def post(message):
 	for i in cursor.execute(f'SELECT user_id FROM users'):
 		bot.send_message(i[0], message)
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(token)
 admins = [889696918, 737286150, 773282852]
 
 # Keyboards
