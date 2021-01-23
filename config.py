@@ -1,5 +1,3 @@
-token = '1413603655:AAHGSnGRJSpcc-trU9q-zZiLqfXmaLrwFpg'
-
 click_upgrade1 = 1000
 click_upgrade5 = 4000
 click_upgrade10 = 6500

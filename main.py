@@ -3,17 +3,22 @@ from telebot import types
 import sqlite3
 import time
 
+import config
+
 token = open('token.txt').read()
 
 def post(message):
 	db = sqlite3.connect('data.db')
 	cursor = db.cursor()
 
-	for i in cursor.execute(f'SELECT user_id FROM users'):
+	for i in cursor.execute('SELECT user_id FROM users'):
 		bot.send_message(i[0], message)
 
 bot = telebot.TeleBot(token)
 admins = [889696918, 737286150, 773282852]
+
+db = sqlite3.connect('data.db')
+cursor = db.cursor()
 
 # Keyboards
 # Profile
@@ -35,6 +40,16 @@ key_click_plus5 = types.InlineKeyboardButton(text="Click upgrade +5", callback_d
 key_click_plus10 = types.InlineKeyboardButton(text="Click upgrade +10", callback_data=f"shop_click_plus 10-{config.click_upgrade10}")
 key_click_plus100 = types.InlineKeyboardButton(text="Click upgrade +100", callback_data=f"shop_click_plus 100-{config.click_upgrade100}")
 key_click_plus1000 = types.InlineKeyboardButton(text="Click upgrade +1000", callback_data=f"shop_click_plus 1000-{config.click_upgrade1000}")
+
+shop_prices = {}
+
+for i in cursor.execute("SELECT upgrade_plus FROM shop_prices"):
+	print(0)
+	for q in cursor.execute(f"SELECT price FROM shop_prices WHERE upgrade_plus = {i[0]}"):
+		shop_prices[i[0]] = q[0]
+
+print(shop_prices)
+
 key_shop_update = types.InlineKeyboardButton(text="Update", callback_data="to_shop")
 key_shop_close = types.InlineKeyboardButton(text="Close", callback_data="to_profile")
 
