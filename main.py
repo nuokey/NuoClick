@@ -3,7 +3,7 @@ from telebot import types
 import sqlite3
 import time
 
-token = open('token.txt', )
+token = open('token.txt').read()
 
 def post(message):
 	db = sqlite3.connect('data.db')
