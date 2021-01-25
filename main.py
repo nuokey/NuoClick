@@ -71,20 +71,26 @@ def start_message(message):
 		cursor = db.cursor()
 		user_balance = None
 
-		main_keyboard = types.ReplyKeyboardMarkup()
-		main_keyboard.row('Click', 'Profile')
-
-		bot.send_message(message.from_user.id, start_text, reply_markup=main_keyboard)
-
 		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
 			user_balance = i[0]
 
+		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
+			click = i[0]
+
+		main_keyboard = types.ReplyKeyboardMarkup()
+		main_keyboard.row('Click')
+
+		print(start_text)
+		print(exec(start_text))
+
+		bot.send_message(message.from_user.id, str(exec(start_text)), reply_markup=main_keyboard)
+
 		if user_balance == None:
-			cursor.execute(f"INSERT INTO users VALUES ({message.from_user.id}, 0, 1, 0)")
+			cursor.execute(f'INSERT INTO users VALUES ({message.from_user.id}, "{message.from_user.username}", 0, 1, 0)')
 			db.commit()
 			bot.send_message(message.from_user.id, 'You have registered')
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 @bot.message_handler(commands=['post'])
 def post_message(message):
@@ -117,14 +123,20 @@ def text_message(message):
 				cursor.execute(f"UPDATE users SET balance = {user_balance + click} WHERE user_id = {message.from_user.id}")
 				db.commit()
 
-			elif message.text == 'Profile':
-				bot.send_message(message.from_user.id, start_message, reply_markup=profile_keyboard)
-
 		else:
 			bot.send_message(message.from_user.id, "You aren't registered, write /start")
 
+		test_username = None
+
+		for i in cursor.execute(f"SELECT username FROM users WHERE user_id = {message.from_user.id}"):
+			test_username = i[0]
+
+		cursor.execute(f'UPDATE users SET username = "{message.from_user.username}" WHERE user_id = {message.from_user.id}')
+		db.commit()
+
 		bot.delete_message(message.from_user.id, message.message_id)
 		user_balance = None
+
 	except:
 		pass
 
