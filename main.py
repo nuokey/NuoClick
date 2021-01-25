@@ -1,11 +1,13 @@
 import telebot
 from telebot import types
 import sqlite3
-import time
 
 import config
 
-token = open('token.txt').read()
+# Texts
+token = open('texts/token.txt').read()
+start_text = open('texts/start.txt').read()
+shop_text = open('texts/shop.txt').read()
 
 def post(message):
 	db = sqlite3.connect('data.db')
@@ -35,29 +37,27 @@ profile_keyboard.add(key_close)
 # Shop
 shop_keyboard = types.InlineKeyboardMarkup()
 
-key_click_plus1 = types.InlineKeyboardButton(text="Click upgrade +1", callback_data=f"shop_click_plus 1-{config.click_upgrade1}")
-key_click_plus5 = types.InlineKeyboardButton(text="Click upgrade +5", callback_data=f"shop_click_plus 5-{config.click_upgrade5}")
-key_click_plus10 = types.InlineKeyboardButton(text="Click upgrade +10", callback_data=f"shop_click_plus 10-{config.click_upgrade10}")
-key_click_plus100 = types.InlineKeyboardButton(text="Click upgrade +100", callback_data=f"shop_click_plus 100-{config.click_upgrade100}")
-key_click_plus1000 = types.InlineKeyboardButton(text="Click upgrade +1000", callback_data=f"shop_click_plus 1000-{config.click_upgrade1000}")
-
 shop_prices = {}
 
-for i in cursor.execute("SELECT upgrade_plus FROM shop_prices"):
-	print(0)
-	for q in cursor.execute(f"SELECT price FROM shop_prices WHERE upgrade_plus = {i[0]}"):
-		shop_prices[i[0]] = q[0]
+upgrade_plus = []
+upgrade_prices = []
 
-print(shop_prices)
+for i in cursor.execute("SELECT upgrade_plus FROM shop_prices"):
+	upgrade_plus.append(i[0])
+
+for q in cursor.execute(f"SELECT price FROM shop_prices"):
+	upgrade_prices.append(q[0])
+
+for i in range(len(upgrade_plus)):
+	shop_prices[upgrade_plus[i]] = upgrade_prices[i]
+
+for i in shop_prices:
+	exec(f'key_click_plus{i} = types.InlineKeyboardButton(text="Сlick upgrade +{i}", callback_data="shop_click_plus 1-{shop_prices.get(i)}")')
+	exec(f'shop_keyboard.add(key_click_plus{i})')
 
 key_shop_update = types.InlineKeyboardButton(text="Update", callback_data="to_shop")
 key_shop_close = types.InlineKeyboardButton(text="Close", callback_data="to_profile")
 
-shop_keyboard.add(key_click_plus1)
-shop_keyboard.add(key_click_plus5)
-shop_keyboard.add(key_click_plus10)
-shop_keyboard.add(key_click_plus100)
-shop_keyboard.add(key_click_plus1000)
 shop_keyboard.add(key_shop_update)
 shop_keyboard.add(key_shop_close)
 
@@ -74,7 +74,7 @@ def start_message(message):
 		main_keyboard = types.ReplyKeyboardMarkup()
 		main_keyboard.row('Click', 'Profile')
 
-		bot.send_message(message.from_user.id, "ClickBot\nVersion: 0.3", reply_markup=main_keyboard)
+		bot.send_message(message.from_user.id, start_text, reply_markup=main_keyboard)
 
 		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
 			user_balance = i[0]
@@ -118,7 +118,7 @@ def text_message(message):
 				db.commit()
 
 			elif message.text == 'Profile':
-				bot.send_message(message.from_user.id, f'Your profile\nCoins: {user_balance}\nCoins per click: {click}', reply_markup=profile_keyboard)
+				bot.send_message(message.from_user.id, start_message, reply_markup=profile_keyboard)
 
 		else:
 			bot.send_message(message.from_user.id, "You aren't registered, write /start")
@@ -166,22 +166,23 @@ def callback_answer(call):
 
 				text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
 				
-				bot.edit_message_text(text+' ', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=None)
-				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
+				bot.edit_message_text(text+' ', chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=None)
+				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=shop_keyboard)
 
 		elif call.data == 'to_profile':
-			bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.id, reply_markup=profile_keyboard)
+			bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=profile_keyboard)
 			
 		elif call.data == 'to_shop':
-			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.id, reply_markup=shop_keyboard)
-		
+			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=shop_keyboard)
+			
+
 		elif call.data == 'profile_close':
-			bot.delete_message(call.from_user.id, call.message.id)
+			bot.delete_message(call.from_user.id, call.message.message_id)
 
 		db.commit()
 	
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 try:
 	bot.polling()
