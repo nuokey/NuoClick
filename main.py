@@ -5,7 +5,7 @@ import sqlite3
 import config
 
 # Texts
-token = open('texts/token.txt').read()
+token = open('token.txt').read()
 start_text = open('texts/start.txt').read()
 shop_text = open('texts/shop.txt').read()
 
@@ -80,10 +80,13 @@ def start_message(message):
 		main_keyboard = types.ReplyKeyboardMarkup()
 		main_keyboard.row('Click')
 
-		print(start_text)
-		print(exec(start_text))
+		text = 'Дичь'
 
-		bot.send_message(message.from_user.id, str(exec(start_text)), reply_markup=main_keyboard)
+		print('text = ' + start_text)
+		exec('text = ' + start_text)
+		print(text)
+
+		bot.send_message(message.from_user.id, text, reply_markup=main_keyboard)
 
 		if user_balance == None:
 			cursor.execute(f'INSERT INTO users VALUES ({message.from_user.id}, "{message.from_user.username}", 0, 1, 0)')
