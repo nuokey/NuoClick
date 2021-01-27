@@ -77,6 +77,7 @@ def start_message(message):
 		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
 			click = i[0]
 
+
 		main_keyboard = types.ReplyKeyboardMarkup()
 		main_keyboard.row('Click')
 
