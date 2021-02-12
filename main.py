@@ -13,7 +13,7 @@ def post(message):
 	main_keyboard = types.ReplyKeyboardMarkup()
 	main_keyboard.row('Click')
 
-	for i in cursor.execute('SELECT user_id FROM users'):
+	for i in cursor.execute('SELECT id FROM users'):
 		bot.send_message(i[0], message, reply_markup=main_keyboard)
 
 bot = telebot.TeleBot(token)
@@ -71,10 +71,10 @@ def start_message(message):
 		cursor = db.cursor()
 		user_balance = None
 
-		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT balance FROM users WHERE id = {message.from_user.id}"):
 			user_balance = i[0]
 
-		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT click FROM users WHERE id = {message.from_user.id}"):
 			click = i[0]
 
 		bot.send_message(message.from_user.id, texts.profile_text(user_balance, click), reply_markup=profile_keyboard)
@@ -107,15 +107,15 @@ def text_message(message):
 		cursor = db.cursor()
 		user_balance = None
 
-		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT balance FROM users WHERE id = {message.from_user.id}"):
 			user_balance = i[0]
 
-		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT click FROM users WHERE id = {message.from_user.id}"):
 			click = i[0]
 
 		if user_balance != None:
 			if message.text == 'Click':
-				cursor.execute(f"UPDATE users SET balance = {user_balance + click} WHERE user_id = {message.from_user.id}")
+				cursor.execute(f"UPDATE users SET balance = {user_balance + click} WHERE id = {message.from_user.id}")
 				db.commit()
 
 		else:
@@ -123,10 +123,10 @@ def text_message(message):
 
 		test_username = None
 
-		for i in cursor.execute(f"SELECT username FROM users WHERE user_id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT username FROM users WHERE id = {message.from_user.id}"):
 			test_username = i[0]
 
-		cursor.execute(f'UPDATE users SET username = "{message.from_user.username}" WHERE user_id = {message.from_user.id}')
+		cursor.execute(f'UPDATE users SET username = "{message.from_user.username}" WHERE id = {message.from_user.id}')
 		db.commit()
 
 		bot.delete_message(message.from_user.id, message.message_id)
@@ -142,13 +142,13 @@ def callback_answer(call):
 		db = sqlite3.connect('data.db')
 		cursor = db.cursor()
 
-		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {call.from_user.id}"):
+		for i in cursor.execute(f"SELECT click FROM users WHERE id = {call.from_user.id}"):
 			click = i[0]
 
-		for i in cursor.execute(f"SELECT balance FROM users WHERE user_id = {call.from_user.id}"):
+		for i in cursor.execute(f"SELECT balance FROM users WHERE id = {call.from_user.id}"):
 			balance = i[0]
 
-		for i in cursor.execute(f"SELECT upgrade_number FROM users WHERE user_id = {call.from_user.id}"):
+		for i in cursor.execute(f"SELECT upgrade_number FROM users WHERE id = {call.from_user.id}"):
 			upgrade_number = i[0]
 
 		upgrade_number_cost = 1 + 0.1 * upgrade_number
@@ -162,9 +162,9 @@ def callback_answer(call):
 			upgrade_cost = int(int(call_data[1]) * upgrade_number_cost)
 
 			if balance >= upgrade_cost:
-				cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE user_id = {call.from_user.id}')
-				cursor.execute(f'UPDATE users SET balance = {balance - upgrade_cost} WHERE user_id = {call.from_user.id}')
-				cursor.execute(f'UPDATE users SET upgrade_number = {upgrade_number + 1} WHERE user_id = {call.from_user.id}')
+				cursor.execute(f'UPDATE users SET click = {click + int(call_data[0])} WHERE id = {call.from_user.id}')
+				cursor.execute(f'UPDATE users SET balance = {balance - upgrade_cost} WHERE id = {call.from_user.id}')
+				cursor.execute(f'UPDATE users SET upgrade_number = {upgrade_number + 1} WHERE id = {call.from_user.id}')
 
 				upgrade_number_cost = 1 + 0.1 * upgrade_number + 0.1
 				balance -= upgrade_cost
@@ -174,7 +174,7 @@ def callback_answer(call):
 				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=shop_keyboard)
 
 		elif call.data == 'to_profile':
-			bot.edit_message_text(f'Your profile\nCoins: {balance}\nCoins per click: {click}', chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=profile_keyboard)
+			bot.edit_message_text(texts.profile_text(balance, click), chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=profile_keyboard)
 			
 		elif call.data == 'to_shop':
 			bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=shop_keyboard)
