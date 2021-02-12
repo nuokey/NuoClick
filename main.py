@@ -2,19 +2,19 @@ import telebot
 from telebot import types
 import sqlite3
 
-import config
+import texts
 
-# Texts
-token = open('token.txt').read()
-start_text = open('texts/start.txt').read()
-shop_text = open('texts/shop.txt').read()
+token = open("token.txt").read()
 
 def post(message):
 	db = sqlite3.connect('data.db')
 	cursor = db.cursor()
 
+	main_keyboard = types.ReplyKeyboardMarkup()
+	main_keyboard.row('Click')
+
 	for i in cursor.execute('SELECT user_id FROM users'):
-		bot.send_message(i[0], message)
+		bot.send_message(i[0], message, reply_markup=main_keyboard)
 
 bot = telebot.TeleBot(token)
 admins = [889696918, 737286150, 773282852]
@@ -77,22 +77,13 @@ def start_message(message):
 		for i in cursor.execute(f"SELECT click FROM users WHERE user_id = {message.from_user.id}"):
 			click = i[0]
 
-
-		main_keyboard = types.ReplyKeyboardMarkup()
-		main_keyboard.row('Click')
-
-		text = 'Дичь'
-
-		print('text = ' + start_text)
-		exec('text = ' + start_text)
-		print(text)
-
-		bot.send_message(message.from_user.id, text, reply_markup=main_keyboard)
+		bot.send_message(message.from_user.id, texts.profile_text(user_balance, click), reply_markup=profile_keyboard)
 
 		if user_balance == None:
 			cursor.execute(f'INSERT INTO users VALUES ({message.from_user.id}, "{message.from_user.username}", 0, 1, 0)')
 			db.commit()
 			bot.send_message(message.from_user.id, 'You have registered')
+		
 	except Exception as e:
 		print(e)
 
@@ -148,7 +139,6 @@ def text_message(message):
 def callback_answer(call):
 	try:
 		global shop_keyboard
-		print(0)
 		db = sqlite3.connect('data.db')
 		cursor = db.cursor()
 
@@ -163,7 +153,7 @@ def callback_answer(call):
 
 		upgrade_number_cost = 1 + 0.1 * upgrade_number
 
-		text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
+		text = texts.shop_text(balance, click)
 
 		if call.data[0:15] == "shop_click_plus":
 			call_data = (call.data).split(' ')
@@ -180,8 +170,6 @@ def callback_answer(call):
 				balance -= upgrade_cost
 				click += int(call_data[0])
 
-				text = f'Shop\nCoins: {balance}\nCoins per click: {click}\n\nPlus 1: {int(config.click_upgrade1 * upgrade_number_cost)}\nPlus 5: {int(config.click_upgrade5 * upgrade_number_cost)}\nPlus 10: {int(config.click_upgrade10 * upgrade_number_cost)}\nPlus 100: {int(config.click_upgrade100 * upgrade_number_cost)}\nPlus 1000: {int(config.click_upgrade1000 * upgrade_number_cost)}'
-				
 				bot.edit_message_text(text+' ', chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=None)
 				bot.edit_message_text(text, chat_id=call.from_user.id, message_id=call.message.message_id, reply_markup=shop_keyboard)
 
