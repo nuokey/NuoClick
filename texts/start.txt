@@ -1,1 +1,0 @@
-f'Your profile\nCoins: {user_balance}\nCoins per click: {click}'
