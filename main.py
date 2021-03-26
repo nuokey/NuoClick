@@ -7,14 +7,17 @@ import texts
 token = open("token.txt").read()
 
 def post(message):
-	db = sqlite3.connect('data.db')
-	cursor = db.cursor()
+	try:
+		db = sqlite3.connect('data.db')
+		cursor = db.cursor()
 
-	main_keyboard = types.ReplyKeyboardMarkup()
-	main_keyboard.row('Click')
+		main_keyboard = types.ReplyKeyboardMarkup()
+		main_keyboard.row('Click')
 
-	for i in cursor.execute('SELECT id FROM users'):
-		bot.send_message(i[0], message, reply_markup=main_keyboard)
+		for i in cursor.execute('SELECT user_id FROM users'):
+			bot.send_message(i[0], message, reply_markup=main_keyboard)
+	except:
+		pass
 
 bot = telebot.TeleBot(token)
 admins = [889696918, 737286150, 773282852]
@@ -61,8 +64,8 @@ key_shop_close = types.InlineKeyboardButton(text="Close", callback_data="to_prof
 shop_keyboard.add(key_shop_update)
 shop_keyboard.add(key_shop_close)
 
-print('ClickBot started')
-# post('Бот запущен')
+# print('ClickBot started')
+post('Бот запущен')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
