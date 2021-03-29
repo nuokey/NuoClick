@@ -67,12 +67,14 @@ shop_keyboard.add(key_shop_close)
 # print('ClickBot started')
 post('Бот запущен')
 
+# Команда /start
 @bot.message_handler(commands=['start'])
 def start_message(message):
 	try:
 		db = sqlite3.connect('data.db')
 		cursor = db.cursor()
 		user_balance = None
+		click = 1
 
 		for i in cursor.execute(f"SELECT balance FROM users WHERE id = {message.from_user.id}"):
 			user_balance = i[0]
@@ -80,16 +82,18 @@ def start_message(message):
 		for i in cursor.execute(f"SELECT click FROM users WHERE id = {message.from_user.id}"):
 			click = i[0]
 
-		bot.send_message(message.from_user.id, texts.profile_text(user_balance, click), reply_markup=profile_keyboard)
-
 		if user_balance == None:
+			user_balance = 0
 			cursor.execute(f'INSERT INTO users VALUES ({message.from_user.id}, "{message.from_user.username}", 0, 1, 0)')
 			db.commit()
 			bot.send_message(message.from_user.id, 'You have registered')
+
+		bot.send_message(message.from_user.id, texts.profile_text(user_balance, click), reply_markup=profile_keyboard)
 		
 	except Exception as e:
 		print(e)
 
+# Команда /post
 @bot.message_handler(commands=['post'])
 def post_message(message):
 	try:
