@@ -56,7 +56,7 @@ for i in range(len(upgrade_plus)):
 	shop_prices[upgrade_plus[i]] = upgrade_prices[i]
 
 for i in shop_prices:
-	exec(f'key_click_plus{i} = types.InlineKeyboardButton(text="Сlick upgrade +{i}", callback_data="shop_click_plus 1-{shop_prices.get(i)}")')
+	exec(f'key_click_plus{i} = types.InlineKeyboardButton(text="Сlick upgrade +{i} ({shop_prices.get(i)})", callback_data="shop_click_plus 1-{shop_prices.get(i)}")')
 	exec(f'shop_keyboard.add(key_click_plus{i})')
 
 key_shop_update = types.InlineKeyboardButton(text="Update", callback_data="to_shop")
