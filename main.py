@@ -1,4 +1,5 @@
 import telebot
+import traceback
 from telebot import types
 import sqlite3
 
@@ -14,13 +15,13 @@ def post(message):
 		main_keyboard = types.ReplyKeyboardMarkup()
 		main_keyboard.row('Click')
 
-		for i in cursor.execute('SELECT user_id FROM users'):
+		for i in cursor.execute('SELECT id FROM users'):
 			bot.send_message(i[0], message, reply_markup=main_keyboard)
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 bot = telebot.TeleBot(token)
-admins = [889696918, 737286150, 773282852]
+admins = [889696918]
 
 db = sqlite3.connect('data.db')
 cursor = db.cursor()
@@ -102,8 +103,8 @@ def post_message(message):
 
 		if message.from_user.id in admins:
 			post(message.text[5:len(message.text)])
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 @bot.message_handler(content_types=['text'])
 def text_message(message):
@@ -130,17 +131,17 @@ def text_message(message):
 
 		test_username = None
 
-		for i in cursor.execute(f"SELECT username FROM users WHERE id = {message.from_user.id}"):
+		for i in cursor.execute(f"SELECT name FROM users WHERE id = {message.from_user.id}"):
 			test_username = i[0]
 
-		cursor.execute(f'UPDATE users SET username = "{message.from_user.username}" WHERE id = {message.from_user.id}')
+		cursor.execute(f'UPDATE users SET name = "{message.from_user.username}" WHERE id = {message.from_user.id}')
 		db.commit()
 
 		bot.delete_message(message.from_user.id, message.message_id)
 		user_balance = None
 
-	except:
-		pass
+	except Exception as e:
+		print(e)
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_answer(call):
