@@ -1,5 +1,4 @@
 import telebot
-import traceback
 from telebot import types
 import sqlite3
 
